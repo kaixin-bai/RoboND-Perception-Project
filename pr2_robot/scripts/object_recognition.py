@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+import os
+import numpy as np
+import sklearn
+from sklearn.preprocessing import LabelEncoder
+
+import pickle
+
+import rospy
+import rospkg
+
+from sensor_stick.srv import GetNormals
+from sensor_stick.features import compute_color_histograms
+from sensor_stick.features import compute_normal_histograms
+from visualization_msgs.msg import Marker
+
+from sensor_stick.marker_tools import *
+from sensor_stick.msg import DetectedObjectsArray
+from sensor_stick.msg import DetectedObject
+from sensor_stick.pcl_helper import *
+from sensor_stick import seg_utils
+
+from pr2_robot.svm_classifier import SVMClassifier
+
+#def get_normals(cloud):
+#    get_normals_prox = rospy.ServiceProxy('/feature_extractor/get_normals', GetNormals)
+#    return get_normals_prox(cloud).cluster
+
+class ObjectRecognition(object):
+    def __init__(self):
+        rospy.init_node('object_recognition')
+        rospack = rospkg.RosPack()
+        pkg_root = rospack.get_path('sensor_stick')
+        fname = os.path.join(pkg_root, 'config', 'model.sav') 
+
+        self._clf = SVMClassifier(model_path=fname)
+
+        self._n_srv = rospy.ServiceProxy('/feature_extractor/get_normals', GetNormals)
+        self._do_pub = rospy.Publisher('~detected_objects', DetectedObjectsArray, queue_size=10)
+        self._mk_pub = rospy.Publisher('~label_markers', Marker, queue_size=10)
+        self._pcl_sub = rospy.Subscriber('/sensor_stick/point_cloud',
+                pc2.PointCloud2, self.pcl_cb, queue_size=1)
+        self._pcl_pub = rospy.Publisher('~segmeted_objects',
+                pc2.PointCloud2, queue_size=1)
+
+    def pcl_cb(self, msg):
+        cloud = ros_to_pcl(msg)
+        cloud_os, cloud_o = self.segment(cloud)
+        labels, objects = self.classify(cloud_os)
+        self.publish(labels, object, cloud_o)
+        #self._tbl_pub.publish(pcl_to_ros(cloud_t))
+        #self._obj_pub.publish(pcl_to_ros(cloud_o))
+
+    @staticmethod
+    def segment(cloud):
+        cloud = seg_utils.downsample(cloud, leaf=0.01)
+        cloud = seg_utils.passthrough(cloud)
+        cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.01)
+        cloud_os = seg_utils.cluster(cloud_o, as_list=True)
+        cloud_o = seg_utils.cluster(cloud_o, as_list=False)
+        return cloud_os, cloud_o
+
+    def classify(self, cloud_os):
+
+        # prepare feature
+        features = []
+        for cloud in cloud_os:
+            cloud_ros = pcl_to_ros(cloud)
+            chists = compute_color_histograms(cloud_ros, using_hsv=True)
+            normals = self._n_srv(cloud_ros).cluster
+            nhists = compute_normal_histograms(normals)
+            feature = np.concatenate((chists, nhists))
+            features.append(feature)
+        features = np.stack(features, axis=0)
+        classes = self._clf.predict(features)
+
+        pos     = np.float32([np.mean(cloud, axis=0) for cloud in cloud_os])
+        pos[:,2] += 0.4
+
+        classes = classes.tolist()
+        pos = pos.tolist()
+
+        labels = [make_label(c,p,i) for i, (c,p) in enumerate(zip(classes, pos))]
+        objects = [DetectedObject(label=l, cloud=pcl_to_ros(c)) for (l,c) in 
+            zip(classes, cloud_os)]
+        return labels, objects
+
+    def publish(self, labels, objects, cloud_o):
+        for l in labels:
+            self._mk_pub.publish(l)
+        self._do_pub.publish(objects)
+        self._pcl_pub.publish(pcl_to_ros(cloud_o))
+
+    def run(self):
+        while not rospy.is_shutdown():
+            rospy.spin()
+
+def main():
+    get_color_list.color_list = []
+    app = ObjectRecognition()
+    app.run()
+
+if __name__ == '__main__':
+    main()
