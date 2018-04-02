@@ -53,8 +53,9 @@ class PR2Perception(object):
 
     @staticmethod
     def segment(cloud):
-        cloud = seg_utils.downsample(cloud, leaf=0.01)
-        cloud = seg_utils.passthrough(cloud)
+        cloud = seg_utils.downsample(cloud, leaf=0.025)
+        cloud = seg_utils.passthrough(cloud, ax='y', axmin=-0.5, axmax=0.5)
+        cloud = seg_utils.passthrough(cloud, axmin=0.6, axmax=1.1)
         cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.01)
         cloud_os = seg_utils.cluster(cloud_o, as_list=True)
         cloud_o = seg_utils.cluster(cloud_o, as_list=False)

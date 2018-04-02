@@ -173,12 +173,10 @@ def main():
     parser.add_argument('--train', action='store_true', help='Force Training if model exists')
     parser.add_argument('--test', action='store_true', help='Test Model')
     args = parser.parse_args()
-    print args
 
     svm = SVMClassifier(model_path=args.model_path)
 
     if args.data_path and os.path.exists(args.data_path):
-        print args
         data = pickle.load(open(args.data_path, 'rb'))
         x, y = svm.format_data(data)
         if args.train:

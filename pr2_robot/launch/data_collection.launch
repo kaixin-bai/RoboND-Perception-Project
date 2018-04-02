@@ -2,7 +2,12 @@
 	<arg name="as_feature" default="true"/>
 	<!--<include file="$(find sensor_stick)/launch/training.launch"/>-->
 	<node pkg="pr2_robot" type="data_collection.py" name="collector" output="screen">
-		<param name="as_feature" value="$(arg as_feature)"/>
+		<!-- object list -->
 		<rosparam command="load" file="$(find pr2_robot)/config/pick_list_3.yaml"/>
+		<!-- collection params -->
+		<param name="as_feature" value="$(arg as_feature)"/>
+		<param name="path" value="$(find pr2_robot)/config/training_set.sav"/>
+		<param name="steps" value="64"/>
+		<param name="max_try" value="8"/>
 	</node>
 </launch>

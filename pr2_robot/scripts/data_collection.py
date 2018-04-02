@@ -2,7 +2,6 @@
 import numpy as np
 import pickle
 import rospy
-import rospkg
 import os
 
 from sensor_stick.pcl_helper import *
@@ -24,16 +23,12 @@ class Collector(object):
     def __init__(self):
         rospy.init_node('collector')
 
-        rospack = rospkg.RosPack()
-        pkg_root = rospack.get_path('pr2_robot')
-        default_path = os.path.join(pkg_root, 'config', 'training_set.sav') 
-
         self._models = rospy.get_param('~object_list', default=[])
         self._models = [m['name'] for m in self._models]
 
-        self._path = rospy.get_param('~path', default=default_path)
+        self._path = rospy.get_param('~path', default='/tmp/training_set.sav')
         self._as_feature = rospy.get_param('~as_feature', default=False)
-        self._steps = rospy.get_param('~steps', default=16) # steps per model
+        self._steps = rospy.get_param('~steps', default=64) # steps per model
         self._max_try = rospy.get_param('~max_try', default=8)
 
     def run(self):
