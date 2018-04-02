@@ -28,13 +28,16 @@ class Collector(object):
 
         self._path = rospy.get_param('~path', default='/tmp/training_set.sav')
         self._as_feature = rospy.get_param('~as_feature', default=False)
+        self._as_hsv = rospy.get_param('~as_hsv', default=False)
         self._steps = rospy.get_param('~steps', default=64) # steps per model
         self._max_try = rospy.get_param('~max_try', default=8)
 
     def run(self):
         initial_setup()
         data = {}
-        for model_name in self._models:
+        m_n = len(self._models)
+        for m_i, model_name in enumerate(self._models):
+            rospy.loginfo('[{}/{}] Processing Model Name : {}'.format(m_i, m_n, model_name))
             model_data = []
             spawn_model(model_name)
 
@@ -45,6 +48,7 @@ class Collector(object):
                     sample_cloud = capture_sample()
                     sample_cloud_arr = ros_to_pcl(sample_cloud).to_array()
                     if sample_cloud_arr.shape[0] == 0:
+                        rospy.loginfo('')
                         print('Invalid cloud detected')
                     else:
                         break
@@ -52,7 +56,7 @@ class Collector(object):
                 if sample_cloud is not None:
                     if self._as_feature:
                         # Extract histogram features
-                        chists = compute_color_histograms(sample_cloud, using_hsv=True)
+                        chists = compute_color_histograms(sample_cloud, using_hsv=self._as_hsv)
                         normals = get_normals(sample_cloud)
                         nhists = compute_normal_histograms(normals)
                         feature = np.concatenate((chists, nhists))

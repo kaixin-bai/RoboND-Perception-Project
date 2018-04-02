@@ -53,7 +53,7 @@ class PR2Perception(object):
 
     @staticmethod
     def segment(cloud):
-        cloud = seg_utils.downsample(cloud, leaf=0.025)
+        cloud = seg_utils.downsample(cloud, leaf=0.01)
         cloud = seg_utils.passthrough(cloud, ax='y', axmin=-0.5, axmax=0.5)
         cloud = seg_utils.passthrough(cloud, axmin=0.6, axmax=1.1)
         cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.01)
@@ -67,7 +67,7 @@ class PR2Perception(object):
         features = []
         for cloud in cloud_os:
             cloud_ros = pcl_to_ros(cloud)
-            chists = compute_color_histograms(cloud_ros, using_hsv=True)
+            chists = compute_color_histograms(cloud_ros, using_hsv=False)
             normals = self._n_srv(cloud_ros).cluster
             nhists = compute_normal_histograms(normals)
             feature = np.concatenate((chists, nhists))

@@ -39,7 +39,7 @@ def cluster(cloud, as_list=False):
     ec = cloud.make_EuclideanClusterExtraction()
     ec.set_ClusterTolerance(0.05)
     ec.set_MinClusterSize(20)
-    ec.set_MaxClusterSize(5000)
+    ec.set_MaxClusterSize(2000)
     ec.set_SearchMethod(tree)
     c_idx = ec.Extract()
     #print np.shape(c_idx)
