@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Import modules
-from pcl_helper import *
+from sensor_stick.pcl_helper import *
 
 # Initialize color_list
 get_color_list.color_list = []

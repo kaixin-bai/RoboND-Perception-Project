@@ -19,29 +19,30 @@ from sensor_stick.marker_tools import *
 from sensor_stick.msg import DetectedObjectsArray
 from sensor_stick.msg import DetectedObject
 from sensor_stick.pcl_helper import *
-from sensor_stick import seg_utils
 
+from pr2_robot import seg_utils
 from pr2_robot.svm_classifier import SVMClassifier
 
-#def get_normals(cloud):
-#    get_normals_prox = rospy.ServiceProxy('/feature_extractor/get_normals', GetNormals)
-#    return get_normals_prox(cloud).cluster
-
-class ObjectRecognition(object):
+class PR2Perception(object):
     def __init__(self):
-        rospy.init_node('object_recognition')
+        rospy.init_node('pr2_perception')
+
         rospack = rospkg.RosPack()
-        pkg_root = rospack.get_path('sensor_stick')
+        pkg_root = rospack.get_path('pr2_robot')
         fname = os.path.join(pkg_root, 'config', 'model.sav') 
 
-        self._clf = SVMClassifier(model_path=fname)
+        self._model_path = rospy.get_param('~model_path', default=fname)
+        self._pcl_topic = rospy.get_param('~pcl_topic', default='/pr2/world/points')
+        self._seg_topic = rospy.get_param('~seg_topic', default='~segmented_objects')
+
+        self._clf = SVMClassifier(model_path=self._model_path)
 
         self._n_srv = rospy.ServiceProxy('/feature_extractor/get_normals', GetNormals)
         self._do_pub = rospy.Publisher('~detected_objects', DetectedObjectsArray, queue_size=10)
         self._mk_pub = rospy.Publisher('~label_markers', Marker, queue_size=10)
-        self._pcl_sub = rospy.Subscriber('/sensor_stick/point_cloud',
+        self._pcl_sub = rospy.Subscriber(self._pcl_topic,
                 pc2.PointCloud2, self.pcl_cb, queue_size=1)
-        self._pcl_pub = rospy.Publisher('~segmeted_objects',
+        self._seg_pub = rospy.Publisher(self._seg_topic,
                 pc2.PointCloud2, queue_size=1)
 
     def pcl_cb(self, msg):
@@ -49,8 +50,6 @@ class ObjectRecognition(object):
         cloud_os, cloud_o = self.segment(cloud)
         labels, objects = self.classify(cloud_os)
         self.publish(labels, object, cloud_o)
-        #self._tbl_pub.publish(pcl_to_ros(cloud_t))
-        #self._obj_pub.publish(pcl_to_ros(cloud_o))
 
     @staticmethod
     def segment(cloud):
@@ -90,7 +89,7 @@ class ObjectRecognition(object):
         for l in labels:
             self._mk_pub.publish(l)
         self._do_pub.publish(objects)
-        self._pcl_pub.publish(pcl_to_ros(cloud_o))
+        self._seg_pub.publish(pcl_to_ros(cloud_o))
 
     def run(self):
         while not rospy.is_shutdown():
@@ -98,7 +97,7 @@ class ObjectRecognition(object):
 
 def main():
     get_color_list.color_list = []
-    app = ObjectRecognition()
+    app = PR2Perception()
     app.run()
 
 if __name__ == '__main__':
