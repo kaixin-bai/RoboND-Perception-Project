@@ -1,0 +1,5 @@
+<launch>
+	<include file="$(find pr2_robot)/launch/pick_place_project.launch"/>
+	<include file="$(find pr2_robot)/launch/ground_truth_marker.launch"/>
+	<node pkg="pr2_robot" type="pr2_perception.py" name="pr2_perception" output="screen"/>
+</launch>

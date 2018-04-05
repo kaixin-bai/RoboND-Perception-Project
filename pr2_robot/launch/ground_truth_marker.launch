@@ -1,0 +1,6 @@
+<launch>
+	<node pkg="pr2_robot" type="ground_truth_marker.py" name="ground_truth_marker" output="screen">
+		<!-- object list -->
+		<rosparam command="load" file="$(find pr2_robot)/config/pick_list_3.yaml"/>
+	</node>
+</launch>
