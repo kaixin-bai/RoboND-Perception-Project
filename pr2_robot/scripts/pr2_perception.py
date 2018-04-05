@@ -4,7 +4,6 @@ PR2 Perception.
 
 To Run:
     roslaunch pr2_robot pr2_robot pick_place_project.launch
-    rosrun sensor_stick feature_extractor
     rosrun pr2_robot pr2_perception.py
 """
 
