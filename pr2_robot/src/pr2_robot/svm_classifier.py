@@ -54,16 +54,19 @@ class SVMClassifier(object):
         else:
             print("Valid Model Path Must Be Specified For Training and Prediction!")
 
-    def save(self, path, model):
+    def save(self, path, param, model):
         with open(path, 'wb') as f:
-            pickle.dump(model, f)
+            pickle.dump([param, model], f)
 
     def load(self, path):
         with open(path, 'r') as f:
-            model = pickle.load(f)
+            param, model = pickle.load(f)
             self._clf = model['clf']
             self._scl = model['scl']
             self._enc = model['enc']
+            # see data_collection.py
+            self._hsv = param['hsv']
+            self._bin = param['bin']
 
     @staticmethod
     def format_data(data):
@@ -173,15 +176,17 @@ def main():
     parser.add_argument('--train', action='store_true', help='Force Training if model exists')
     parser.add_argument('--test', action='store_true', help='Test Model')
     args = parser.parse_args()
-
-    svm = SVMClassifier(model_path=args.model_path)
+    print('Got Arguments, {}'.format(args))
+    input_model = ('' if args.train else args.model_path)
+    svm = SVMClassifier(model_path=input_model)
 
     if args.data_path and os.path.exists(args.data_path):
-        data = pickle.load(open(args.data_path, 'rb'))
+        x = pickle.load(open(args.data_path, 'rb'))
+        [param, data] = pickle.load(open(args.data_path, 'rb'))
         x, y = svm.format_data(data)
         if args.train:
             model = svm.train(x, y)
-            svm.save(args.model_path, model)
+            svm.save(args.model_path, param, model)
 
         svm.load(args.model_path)
         if args.test:

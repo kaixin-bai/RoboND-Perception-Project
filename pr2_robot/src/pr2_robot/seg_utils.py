@@ -6,6 +6,13 @@ from sensor_stick.pcl_helper import *
 # Initialize color_list
 get_color_list.color_list = []
 
+def denoise(cloud, k=50, x=1.0):
+    filter = cloud.make_statistical_outlier_filter()
+    filter.set_mean_k(k)
+    filter.set_std_dev_mul_thresh(x)
+    cloud_filtered = filter.filter()
+    return cloud_filtered
+
 def downsample(cloud, leaf=0.025):
     # Voxel Grid filter
     vox = cloud.make_voxel_grid_filter()
@@ -37,7 +44,7 @@ def cluster(cloud, as_list=False):
     cloud = XYZRGB_to_XYZ(cloud)
     tree = cloud.make_kdtree()
     ec = cloud.make_EuclideanClusterExtraction()
-    ec.set_ClusterTolerance(0.05)
+    ec.set_ClusterTolerance(0.02)
     ec.set_MinClusterSize(20)
     ec.set_MaxClusterSize(2000)
     ec.set_SearchMethod(tree)

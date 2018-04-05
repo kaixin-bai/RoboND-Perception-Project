@@ -1,6 +1,8 @@
 <launch>
 	<arg name="as_feature" default="true"/>
 	<arg name="as_hsv" default="false"/>
+	<arg name="nbins" default="32"/>
+
 	<!--<include file="$(find sensor_stick)/launch/training.launch"/>-->
 	<node pkg="pr2_robot" type="data_collection.py" name="collector" output="screen">
 		<!-- object list -->
@@ -8,6 +10,7 @@
 		<!-- collection params -->
 		<param name="as_feature" value="$(arg as_feature)"/>
 		<param name="as_hsv" value="$(arg as_hsv)"/>
+		<param name="nbins" value="$(arg nbins)" />
 		<param name="path" value="$(find pr2_robot)/config/training_set.sav"/>
 		<param name="steps" value="64"/>
 		<param name="max_try" value="8"/>

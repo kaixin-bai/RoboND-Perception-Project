@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+PR2 Perception.
+
+To Run:
+    roslaunch pr2_robot pr2_robot pick_place_project.launch
+    rosrun sensor_stick feature_extractor
+    rosrun pr2_robot pr2_perception.py
+"""
 
 import os
 import numpy as np
@@ -11,8 +19,7 @@ import rospy
 import rospkg
 
 from sensor_stick.srv import GetNormals
-from sensor_stick.features import compute_color_histograms
-from sensor_stick.features import compute_normal_histograms
+from pr2_robot.features import cloud2feature
 from visualization_msgs.msg import Marker
 
 from sensor_stick.marker_tools import *
@@ -56,7 +63,8 @@ class PR2Perception(object):
         cloud = seg_utils.downsample(cloud, leaf=0.01)
         cloud = seg_utils.passthrough(cloud, ax='y', axmin=-0.5, axmax=0.5)
         cloud = seg_utils.passthrough(cloud, axmin=0.6, axmax=1.1)
-        cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.01)
+        cloud = seg_utils.denoise(cloud, k=50, x=0.01)
+        cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.02)
         cloud_os = seg_utils.cluster(cloud_o, as_list=True)
         cloud_o = seg_utils.cluster(cloud_o, as_list=False)
         return cloud_os, cloud_o
@@ -67,10 +75,10 @@ class PR2Perception(object):
         features = []
         for cloud in cloud_os:
             cloud_ros = pcl_to_ros(cloud)
-            chists = compute_color_histograms(cloud_ros, using_hsv=False)
             normals = self._n_srv(cloud_ros).cluster
-            nhists = compute_normal_histograms(normals)
-            feature = np.concatenate((chists, nhists))
+            feature = cloud2feature(cloud_ros, normals,
+                    self._clf._hsv, bins=self._clf._bin
+                    )
             features.append(feature)
         features = np.stack(features, axis=0)
         classes = self._clf.predict(features)
