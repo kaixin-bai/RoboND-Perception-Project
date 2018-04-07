@@ -19,7 +19,7 @@ class GroundTruthMarker(object):
         for i, (n,p) in enumerate(zip(msg.name, msg.pose)):
             if not (n in self._models):
                 continue
-            pos = [p.position.x, p.position.y, p.position.z + 0.6]
+            pos = [p.position.x, p.position.y, p.position.z + 0.3]
             label = make_label(n, pos, i, color=[0.0,1.0,0.0])
             labels.append(label)
 

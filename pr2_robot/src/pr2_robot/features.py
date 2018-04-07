@@ -14,7 +14,7 @@ def nhist(xs, *args, **kwargs):
     h /= np.sum(h)#, axis=-1, keepdims=True)
     return h
 
-import cv2
+#import cv2
 
 def compute_color_histograms(cloud, using_hsv=False, bins=16):
 

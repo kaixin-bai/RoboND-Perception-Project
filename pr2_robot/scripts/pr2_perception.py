@@ -65,7 +65,7 @@ class PR2Perception(object):
         cloud = seg_utils.downsample(cloud, leaf=0.01)
         cloud = seg_utils.passthrough(cloud, ax='y', axmin=-0.5, axmax=0.5)
         cloud = seg_utils.passthrough(cloud, axmin=0.6, axmax=1.1)
-        cloud = seg_utils.denoise(cloud, k=50, x=0.01)
+        cloud = seg_utils.denoise(cloud, k=50, x=1e-1)
         cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.02)
         cloud_os = seg_utils.cluster(cloud_o, as_list=True)
         cloud_o = seg_utils.cluster(cloud_o, as_list=False)
@@ -76,6 +76,7 @@ class PR2Perception(object):
         # prepare feature
         features = []
         for cloud in cloud_os:
+            #print np.shape(cloud)
             cloud_ros = pcl_to_ros(cloud)
             normals = self._n_srv(cloud_ros).cluster
             feature = cloud2feature(cloud_ros, normals,

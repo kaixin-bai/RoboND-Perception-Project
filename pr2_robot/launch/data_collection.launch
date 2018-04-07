@@ -1,7 +1,7 @@
 <launch>
 	<arg name="as_feature" default="true"/>
-	<arg name="as_hsv" default="false"/>
-	<arg name="nbins" default="32"/>
+	<arg name="as_hsv" default="true"/>
+	<arg name="nbins" default="16"/>
 
 	<!--<include file="$(find sensor_stick)/launch/training.launch"/>-->
 	<node pkg="pr2_robot" type="data_collection.py" name="collector" output="screen">
