@@ -1,5 +1,17 @@
 <launch>
-	<include file="$(find pr2_robot)/launch/pick_place_project.launch"/>
-	<include file="$(find pr2_robot)/launch/ground_truth_marker.launch"/>
-	<node pkg="pr2_robot" type="pr2_perception.py" name="pr2_perception" output="screen"/>
+	<arg name="scene" default="1"/>
+	<include file="$(find pr2_robot)/launch/pick_place_project.launch">
+		<arg name="scene" value="$(arg scene)"/>
+	</include>
+
+	<include file="$(find pr2_robot)/launch/ground_truth_marker.launch">
+		<arg name="scene" value="$(arg scene)"/>
+	</include>
+
+	<node pkg="pr2_robot" type="pr2_perception.py" name="pr2_perception" output="screen">
+		<param name="scene" value="$(arg scene)"/>
+		<!--<rosparam command="load" file="$(find pr2_robot)/config/pick_list_$(arg scene).yaml"/>-->
+		<!--<rosparam command="load" file="$(find pr2_robot)/config/dropbox.yaml"/>-->
+	</node>
+
 </launch>

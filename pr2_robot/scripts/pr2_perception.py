@@ -52,10 +52,13 @@ class PR2Perception(object):
                 pc2.PointCloud2, queue_size=1)
 
     def pcl_cb(self, msg):
-        cloud = ros_to_pcl(msg)
-        cloud_os, cloud_o = self.segment(cloud)
-        labels, objects = self.classify(cloud_os)
-        self.publish(labels, object, cloud_o)
+        try:
+            cloud = ros_to_pcl(msg)
+            cloud_os, cloud_o = self.segment(cloud)
+            labels, objects = self.classify(cloud_os)
+            self.publish(labels, objects, cloud_o)
+        except Exception as e:
+            rospy.logerr_throttle(2.0, "Invalid or Empty Cloud : {}".format(e))
 
     @staticmethod
     def segment(cloud):
