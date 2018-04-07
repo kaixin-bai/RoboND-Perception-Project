@@ -53,8 +53,6 @@ class PR2PickPlaceClient(object):
         self._wait_turn = rospy.get_param('~wait_turn', default=5.0) # wait 10 sec. at startup
         self._wait_data = rospy.get_param('~wait_data', default=5.0) # wait 10 sec. at startup
 
-        # TODO : grab bin pose data
-
         self._yaml_file = rospy.get_param('~yaml_file', default='/tmp/target.yaml')
         self._static = rospy.get_param('~static', default=False)
         self._save_yaml = rospy.get_param('~save_yaml', default=False)
@@ -115,7 +113,6 @@ class PR2PickPlaceClient(object):
 
     def turn_to(self, angle, tol=np.deg2rad(1.0)):
         """ Turn to angle over duration """
-        # TODO : compute duration from speed?
         while True:
             if self._j is not None:
                 if np.abs(angle - self._j) < tol:
@@ -126,12 +123,13 @@ class PR2PickPlaceClient(object):
 
     def move(self, object):
         """ Pick-and-place object via `pick_place_routine` """
-        # TODO : implement
+        rospy.loginfo("Waiiting for pick_place_routine service ... ")
+        # TODO : support service timeout
         rospy.wait_for_service('pick_place_routine')
         # which_arm \element {right, left}
         try:
             pick_place_routine = rospy.ServiceProxy('pick_place_routine', PickPlace)
-            test_scene_num = Int32(self._scene) # TODO : get this info??
+            test_scene_num = Int32(self._scene)
 
             # 1 : search for object in object_list
             for o in self._object_list:
@@ -153,7 +151,8 @@ class PR2PickPlaceClient(object):
                 return False
 
             # 3 : search for pick_pose
-            pick_poses = [d[0] for d in self._data if(d[1]==object)] ## TODO : improve heuristic
+            ## TODO : improve heuristic
+            pick_poses = [d[0] for d in self._data if(d[1]==object)]
             pick_pose = np.mean(pick_poses, axis=0)
 
             if np.any(np.isnan(pick_pose)):
@@ -164,15 +163,15 @@ class PR2PickPlaceClient(object):
 
             # format ...
             pick_pose_msg = Pose()
-            pick_pose_msg.position.x = pick_pose[0]
-            pick_pose_msg.position.y = pick_pose[1]
-            pick_pose_msg.position.z = pick_pose[2]
-            pick_pose_msg.orientation.w = 1.0 # TODO : do I need to compute orientation?
+            pick_pose_msg.position.x = float(pick_pose[0])
+            pick_pose_msg.position.y = float(pick_pose[1])
+            pick_pose_msg.position.z = float(pick_pose[2])
+            pick_pose_msg.orientation.w = 1.0
 
             place_pose_msg = Pose()
-            place_pose_msg.position.x = place_pose[0]
-            place_pose_msg.position.y = place_pose[1]
-            place_pose_msg.position.z = place_pose[2]
+            place_pose_msg.position.x = float(place_pose[0])
+            place_pose_msg.position.y = float(place_pose[1])
+            place_pose_msg.position.z = float(place_pose[2])
             place_pose_msg.orientation.w = 1.0
 
             object_msg = String(object)
@@ -192,9 +191,9 @@ class PR2PickPlaceClient(object):
         return True
 
     def save(self):
+        rospy.loginfo('yaml data : {}'.format(self._yaml_data))
         send_to_yaml(self._yaml_file, self._yaml_data)
         """ Save object location parameters as a YAML file """
-        # TODO : implement
 
     def log(self, message):
         """ Log current state """
