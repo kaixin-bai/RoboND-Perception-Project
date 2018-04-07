@@ -14,6 +14,8 @@ def nhist(xs, *args, **kwargs):
     h /= np.sum(h)#, axis=-1, keepdims=True)
     return h
 
+import cv2
+
 def compute_color_histograms(cloud, using_hsv=False, bins=16):
 
     # Compute histograms for the clusters
@@ -37,7 +39,19 @@ def compute_color_histograms(cloud, using_hsv=False, bins=16):
         channel_2_vals.append(color[1])
         channel_3_vals.append(color[2])
 
-    return nhist([channel_1_vals, channel_2_vals, channel_3_vals], bins=bins, range=[0, 256])
+    res = nhist([channel_1_vals, channel_2_vals, channel_3_vals], bins=bins, range=[0, 256])
+
+    #rmax = np.argmax(res[:bins]) / float(bins) * 256
+    #gmax = np.argmax(res[bins:2*bins]) / float(bins) * 256
+    #bmax = np.argmax(res[2*bins:]) / float(bins) * 256
+    #print('rgb: ({},{},{})'.format(rmax, gmax, bmax))
+    #o = np.ones((128,128), dtype=np.float32)
+    #m = np.stack([o*bmax, o*gmax, o*rmax], axis=-1)
+    #m /= 256.0
+    #cv2.imshow('color', m)
+    #cv2.waitKey(10)
+
+    return res
 
 def compute_normal_histograms(normal_cloud, bins=16):
     norm_x_vals = []
