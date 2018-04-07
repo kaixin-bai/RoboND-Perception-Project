@@ -236,7 +236,7 @@ class PR2PickPlaceClient(object):
         self._state = 'move'
         self.log('State : {}'.format(self._state))
         for object in self._object_names:
-            #self._data = [] # clear data, in case stuff got knocked over
+            self._data = [] # clear data, in case stuff got knocked over
             self._state = 'data' # temporarily collect data
             self.wait_for(self._wait_data)
             self._state = 'move'
