@@ -169,7 +169,7 @@ class PR2PickPlaceClient(object):
             pick_pose_msg.orientation.w = 1.0
 
             place_pose_msg = Pose()
-            place_pose_msg.position.x = float(place_pose[0])
+            place_pose_msg.position.x = float(place_pose[0]) - 0.1 # more interior
             place_pose_msg.position.y = float(place_pose[1])
             place_pose_msg.position.z = float(place_pose[2])
             place_pose_msg.orientation.w = 1.0
