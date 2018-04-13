@@ -68,17 +68,17 @@ class PR2Perception(object):
     def pcl_cb(self, msg):
         try:
             cloud = ros_to_pcl(msg)
-            cloud_os, cloud_o, cloud_t, cloud_b1, cloud_b2 = self.segment(cloud)
+            cloud_os, cloud_o, cloud_t = self.segment(cloud)
 
             # bins ...
-            cloud_b = []
-            for c in [self._cloud_b, cloud_b1, cloud_b2]:
-                if np.ndim(c) == 2:
-                    cloud_b.append(c)
-            cloud_b = np.concatenate(cloud_b, axis=0)
-            self._cloud_b = pcl.PointCloud_PointXYZRGB()
-            self._cloud_b.from_list(cloud_b)
-            self._cloud_b = seg_utils.downsample(self._cloud_b, leaf=0.01)
+            #cloud_b = []
+            #for c in [self._cloud_b, cloud_b1, cloud_b2]:
+            #    if np.ndim(c) == 2:
+            #        cloud_b.append(c)
+            #cloud_b = np.concatenate(cloud_b, axis=0)
+            #self._cloud_b = pcl.PointCloud_PointXYZRGB()
+            #self._cloud_b.from_list(cloud_b)
+            #self._cloud_b = seg_utils.downsample(self._cloud_b, leaf=0.01)
 
             labels, objects = self.classify(cloud_os)
             self.publish(labels, objects, cloud_o, cloud_os, cloud_t)
@@ -88,17 +88,17 @@ class PR2Perception(object):
     @staticmethod
     def segment(cloud):
         cloud = seg_utils.downsample(cloud, leaf=0.01)
-        cloud = seg_utils.passthrough(cloud, ax='y', axmin=-2.0, axmax=2.0)
+        cloud = seg_utils.passthrough(cloud, ax='y', axmin=-0.5, axmax=0.5)
         cloud = seg_utils.passthrough(cloud, ax='z', axmin=0.6, axmax=3.0)
         cloud = seg_utils.denoise(cloud, k=50, x=1e-1)
 
-        cloud_b1 = seg_utils.passthrough(cloud, ax='y', axmin=0.5, axmax=2.0)
-        cloud_b2 = seg_utils.passthrough(cloud, ax='y', axmin=-2.0, axmax=-0.5)
+        #cloud_b1 = seg_utils.passthrough(cloud, ax='y', axmin=0.5, axmax=2.0)
+        #cloud_b2 = seg_utils.passthrough(cloud, ax='y', axmin=-2.0, axmax=-0.5)
 
         cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.02)
         cloud_os = seg_utils.cluster(cloud_o, as_list=True)
         cloud_o = seg_utils.cluster(cloud_o, as_list=False)
-        return cloud_os, cloud_o, cloud_t, cloud_b1, cloud_b2
+        return cloud_os, cloud_o, cloud_t#, cloud_b1, cloud_b2
 
     def classify(self, cloud_os):
         # prepare feature
@@ -127,7 +127,7 @@ class PR2Perception(object):
     def publish(self, labels, objects, cloud_o, cloud_os, cloud_t):
         # construct map cloud ...
         if self._target:
-            map_cloud_list = [self._cloud_b, cloud_t]
+            map_cloud_list = [cloud_t]
             map_cloud_list += [c for (l,c) in zip(labels, cloud_os) if l.text != self._target]
             map_cloud_list = np.concatenate(map_cloud_list, axis=0)
             #t, q = self._tf.lookupTransform('camera_link', 'world', rospy.Time(0))
