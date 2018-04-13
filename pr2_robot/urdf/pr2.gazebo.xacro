@@ -64,7 +64,7 @@
         <gripper_link>left_left_gripper_finger_link</gripper_link>
       </arm>
       <forces_angle_tolerance>100</forces_angle_tolerance>
-      <update_rate>4</update_rate>
+      <update_rate>20</update_rate>
       <grip_count_threshold>4</grip_count_threshold>
       <max_grip_count>8</max_grip_count>
       <release_tolerance>0.003</release_tolerance>

@@ -13,6 +13,7 @@ from sensor_stick.marker_tools import *
 from sensor_stick.msg import DetectedObjectsArray
 from sensor_stick.msg import DetectedObject
 from sensor_stick.pcl_helper import *
+from std_srvs.srv import Empty, EmptyRequest
 
 import rospy
 import tf
@@ -51,7 +52,7 @@ class PR2PickPlaceClient(object):
 
         self._wait_init = rospy.get_param('~wait_init', default=0.0) # wait 10 sec. at startup
         self._wait_turn = rospy.get_param('~wait_turn', default=5.0) # wait 10 sec. at startup
-        self._wait_data = rospy.get_param('~wait_data', default=5.0) # wait 10 sec. at startup
+        self._wait_data = rospy.get_param('~wait_data', default=10.0) # wait 10 sec. at startup
 
         self._yaml_file = rospy.get_param('~yaml_file', default='/tmp/target.yaml')
         self._static = rospy.get_param('~static', default=False)
@@ -119,7 +120,20 @@ class PR2PickPlaceClient(object):
                     break
             self._j_pub.publish(angle)
             self._rate.sleep()
-        #self.wait_for(duration)
+
+    def clear_map(self):
+        clear_map_srv = rospy.ServiceProxy('/clear_octomap', Empty)
+        clear_map_srv()
+
+    def set_target(self, object):
+        try:
+            set_target_srv = rospy.ServiceProxy('/pr2_perception/set_target', SetTarget)
+            res = set_target_srv(String(object))
+            rospy.loginfo_throttle(1.0, 'Set Target {} {}'.format(object, res.success))
+            return res.success
+        except rospy.ServiceException, e:
+            print "Service call failed: %s"%e
+            return False
 
     def move(self, object):
         """ Pick-and-place object via `pick_place_routine` """
@@ -210,6 +224,10 @@ class PR2PickPlaceClient(object):
         self._state = 'map'
         self.log('State : {}'.format(self._state))
 
+        # build initial collision map
+        self.clear_map()
+        self.set_target('build')
+
         self.turn_to(0.0)
         self.turn_to(-np.pi/2)
         self.turn_to(np.pi/2)
@@ -235,11 +253,14 @@ class PR2PickPlaceClient(object):
         self._state = 'move'
         self.log('State : {}'.format(self._state))
         for object in self._object_names:
+            self.clear_map()
+            self.set_target(object) # disable publishing point cloud for target
             self._data = [] # clear data, in case stuff got knocked over
             self._state = 'data' # temporarily collect data
             self.wait_for(self._wait_data)
+            # stop point cloud, prevent arm from getting included in collision map
+            self.set_target('')
             self._state = 'move'
-
             suc = self.move(object)
             rospy.loginfo_throttle(1.0, "[{}] Move Success : {}".format(object, suc))
 

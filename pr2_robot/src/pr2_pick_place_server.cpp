@@ -9,6 +9,9 @@
 
 // Author: Harsh Pandya
 
+// change below to play with how much to wait for gripper to close
+#define GRIPPER_DELAY 8.0
+
 #include<pr2_robot/pr2_pick_place_server.h>
 
 PR2PickPlace::PR2PickPlace(ros::NodeHandle nh)
@@ -219,7 +222,7 @@ bool PR2PickPlace::Routine(pr2_robot::PickPlace::Request &req,
 
       //Close Gripper
       OperateRightGripper(true);
-      ros::Duration(3.0).sleep();
+      ros::Duration(GRIPPER_DELAY).sleep();
 
       //Reach movement
       right_move_group.setStartStateToCurrentState();
@@ -260,7 +263,7 @@ bool PR2PickPlace::Routine(pr2_robot::PickPlace::Request &req,
 
       //Open Gripper
       OperateRightGripper(false);
-      ros::Duration(5.0).sleep();
+      ros::Duration(GRIPPER_DELAY).sleep();
 
       //Raise arms
       right_move_group.setNamedTarget("RIGHT_ARM_INITIAL_POSE");
@@ -308,7 +311,7 @@ bool PR2PickPlace::Routine(pr2_robot::PickPlace::Request &req,
 
       //Close Gripper
       OperateLeftGripper(true);
-      ros::Duration(3.0).sleep();
+      ros::Duration(GRIPPER_DELAY).sleep();
 
       //Reach movement
       left_move_group.setStartStateToCurrentState();
@@ -351,7 +354,7 @@ bool PR2PickPlace::Routine(pr2_robot::PickPlace::Request &req,
 
       //Open Gripper
       OperateLeftGripper(false);
-      ros::Duration(5.0).sleep();
+      ros::Duration(GRIPPER_DELAY).sleep();
 
       //Raise arms
       left_move_group.setNamedTarget("LEFT_ARM_INITIAL_POSE");
@@ -421,14 +424,17 @@ bool PR2PickPlace::OperateRightGripper(const bool &close_gripper)
   // Set finger joint values
   if (close_gripper)
   {
-    gripper_joint_positions[0] = 0.04;
-    gripper_joint_positions[1] = 0.04;
+    gripper_joint_positions[0] = 0.05;
+    gripper_joint_positions[1] = 0.05;
   }
   else
   {
     gripper_joint_positions[0] = 0.0;
     gripper_joint_positions[1] = 0.0;
   }
+  //double tol = right_gripper_group.getGoalJointTolerance();
+  //std::cout << "tol : " << tol << std::endl;
+
 
   right_gripper_group.setJointValueTarget(gripper_joint_positions);
   ros::Duration(1.5).sleep();
@@ -453,8 +459,8 @@ bool PR2PickPlace::OperateLeftGripper(const bool &close_gripper)
   // Set finger joint values
   if (close_gripper)
   {
-    gripper_joint_positions[0] = 0.045;
-    gripper_joint_positions[1] = 0.045;
+    gripper_joint_positions[0] = 0.05;
+    gripper_joint_positions[1] = 0.05;
   }
   else
   {

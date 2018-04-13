@@ -19,11 +19,11 @@ find_package(catkin REQUIRED COMPONENTS
 	gazebo_msgs
 	gazebo_grasp_plugin
 	moveit_visual_tools
-  roscpp
-  rospy
-  roslint
-  sensor_msgs
-)
+	roscpp
+	rospy
+	roslint
+	sensor_msgs
+	)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
 
@@ -69,10 +69,11 @@ catkin_python_setup()
 
 ## Generate services in the 'srv' folder
 add_service_files(
-  FILES
-  PickPlace.srv
+	FILES
+	PickPlace.srv
 	Grasp.srv
-)
+	SetTarget.srv
+	)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -83,10 +84,10 @@ add_service_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
- DEPENDENCIES
- std_msgs
- geometry_msgs
-)
+	DEPENDENCIES
+	std_msgs
+	geometry_msgs
+	)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -118,11 +119,11 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES pr2_robot
-#  CATKIN_DEPENDS sensor_msgs
-#  DEPENDS system_lib
-)
+	#  INCLUDE_DIRS include
+	#  LIBRARIES pr2_robot
+	#  CATKIN_DEPENDS sensor_msgs
+	#  DEPENDS system_lib
+	)
 
 ###########
 ## Build ##

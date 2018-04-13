@@ -39,14 +39,14 @@ def ransac(cloud, dmax=0.01):
 
     return cloud_table, cloud_objects
 
-def cluster(cloud, as_list=False):
+def cluster(cloud, as_list=False, tol=0.02, min_size=20, max_size=200000):
     cloudrgb = cloud #save
     cloud = XYZRGB_to_XYZ(cloud)
     tree = cloud.make_kdtree()
     ec = cloud.make_EuclideanClusterExtraction()
-    ec.set_ClusterTolerance(0.02)
-    ec.set_MinClusterSize(20)
-    ec.set_MaxClusterSize(2000)
+    ec.set_ClusterTolerance(tol)
+    ec.set_MinClusterSize(min_size)
+    ec.set_MaxClusterSize(max_size)
     ec.set_SearchMethod(tree)
     c_idx = ec.Extract()
     #print np.shape(c_idx)
