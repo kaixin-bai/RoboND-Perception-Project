@@ -11,10 +11,8 @@ def rgb_to_hsv(rgb_list):
 def nhist(xs, *args, **kwargs):
     h = [np.histogram(x, *args, **kwargs)[0] for x in xs]
     h = np.concatenate(h).astype(np.float32)
-    h /= np.sum(h)#, axis=-1, keepdims=True)
+    h /= np.sum(h)
     return h
-
-#import cv2
 
 def compute_color_histograms(cloud, using_hsv=False, bins=16):
 
@@ -40,17 +38,6 @@ def compute_color_histograms(cloud, using_hsv=False, bins=16):
         channel_3_vals.append(color[2])
 
     res = nhist([channel_1_vals, channel_2_vals, channel_3_vals], bins=bins, range=[0, 256])
-
-    #rmax = np.argmax(res[:bins]) / float(bins) * 256
-    #gmax = np.argmax(res[bins:2*bins]) / float(bins) * 256
-    #bmax = np.argmax(res[2*bins:]) / float(bins) * 256
-    #print('rgb: ({},{},{})'.format(rmax, gmax, bmax))
-    #o = np.ones((128,128), dtype=np.float32)
-    #m = np.stack([o*bmax, o*gmax, o*rmax], axis=-1)
-    #m /= 256.0
-    #cv2.imshow('color', m)
-    #cv2.waitKey(10)
-
     return res
 
 def compute_normal_histograms(normal_cloud, bins=16):
@@ -64,13 +51,6 @@ def compute_normal_histograms(normal_cloud, bins=16):
         norm_x_vals.append(norm_component[0])
         norm_y_vals.append(norm_component[1])
         norm_z_vals.append(norm_component[2])
-
-    # TODO: Compute histograms of normal values (just like with color)
-
-    # TODO: Concatenate and normalize the histograms
-
-    # Generate random features for demo mode.  
-    # Replace normed_features with your feature vector
     return nhist([norm_x_vals, norm_y_vals, norm_z_vals], bins=bins, range=[-1,1])
 
 def cloud2feature(cloud, normals, hsv=False, bins=16):

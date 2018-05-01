@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 Adaptation from train_svm.py
 """
@@ -67,6 +68,7 @@ class SVMClassifier(object):
             # see data_collection.py
             self._hsv = param['hsv']
             self._bin = param['bin']
+            print self._bin
 
     @staticmethod
     def format_data(data):
@@ -76,7 +78,25 @@ class SVMClassifier(object):
         """
         feature_list = []
         label_list = []
+
         for name, fs in data.iteritems():
+            # ============
+            # visualization ...
+            #bin = len(fs[0]) / 6
+
+            #fs = np.stack(fs, axis=0)
+            #plt.boxplot(fs, notch=True)
+
+            ## annotate ...
+            #for i in range(0, bin*6, bin):
+            #    plt.axvline(x=i)
+            #xs = range(bin/2, bin*6, bin)
+            #plt.xticks(xs, ['h','s','v','x','y','z'])
+            #plt.title(name)
+            #plt.savefig('/tmp/{}.png'.format(name))
+            #plt.clf()
+            # =============
+
             for f in fs:
                 label_list.append(name)
                 feature_list.append(f)
