@@ -3,7 +3,7 @@
 PR2 Perception.
 
 To Run:
-    roslaunch pr2_robot pr2_robot pick_place_project.launch
+    roslaunch pr2_robot pick_place_project.launch
     rosrun pr2_robot pr2_perception.py
 """
 
@@ -87,10 +87,15 @@ class PR2Perception(object):
 
     @staticmethod
     def segment(cloud):
+        #pcl.save(cloud, '/tmp/raw.pcd')
         cloud = seg_utils.downsample(cloud, leaf=0.01)
+        #pcl.save(cloud, '/tmp/down.pcd')
         cloud = seg_utils.passthrough(cloud, ax='y', axmin=-0.5, axmax=0.5)
+        #pcl.save(cloud, '/tmp/pass_y.pcd')
         cloud = seg_utils.passthrough(cloud, ax='z', axmin=0.6, axmax=3.0)
+        #pcl.save(cloud, '/tmp/pass_z.pcd')
         cloud = seg_utils.denoise(cloud, k=50, x=1e-1)
+        #pcl.save(cloud, '/tmp/denoise.pcd')
 
         #cloud_b1 = seg_utils.passthrough(cloud, ax='y', axmin=0.5, axmax=2.0)
         #cloud_b2 = seg_utils.passthrough(cloud, ax='y', axmin=-2.0, axmax=-0.5)

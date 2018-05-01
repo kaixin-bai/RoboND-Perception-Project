@@ -4,14 +4,71 @@
 
 ### Pre-processing
 
+Because the pre-processing pipeline was used in multiple cases, I separated them out into a single utilities script.
+
+In particular, the scripts follow an intuitive pattern that returns a *filtered* output cloud from a given input cloud and the parameters.
+
+See the excerpts from [seg\_utils.py](pr2_robot/src/pr2_robot/seg_utils.py) for details on implementation:
+
 ```python
+def denoise(cloud, k=50, x=1.0):
+    filter = cloud.make_statistical_outlier_filter()
+    filter.set_mean_k(k)
+    filter.set_std_dev_mul_thresh(x)
+    cloud_filtered = filter.filter()
+    return cloud_filtered
+
+def downsample(cloud, leaf=0.025):
+    # Voxel Grid filter
+    vox = cloud.make_voxel_grid_filter()
+    vox.set_leaf_size(leaf, leaf, leaf)
+    cloud_filtered = vox.filter()
+    return cloud_filtered
+
+def passthrough(cloud, ax='z', axmin=0.6, axmax=1.1):
+    passthrough = cloud.make_passthrough_filter()
+    passthrough.set_filter_field_name(ax)
+    passthrough.set_filter_limits(axmin, axmax)
+    cloud_filtered = passthrough.filter()
+    return cloud_filtered
+```
+
+In use, the cloud would simply be filtered in an iterative manner, as in the following example from `PR2Perception.segment()` defined in [pr2\_perception.py](pr2_robot/scripts/pr2_perception.py):
+
+```python
+# ... acquire data ...
 cloud = seg_utils.downsample(cloud, leaf=0.01)
 cloud = seg_utils.passthrough(cloud, ax='y', axmin=-0.5, axmax=0.5)
 cloud = seg_utils.passthrough(cloud, ax='z', axmin=0.6, axmax=3.0)
 cloud = seg_utils.denoise(cloud, k=50, x=1e-1)
+# ... further processing ...
 ```
 
+Here's how a point cloud would get transformed as it goes across the pre-processing pipeline:
+
+| Raw | Downsample | Pass Y | Pass Z | Denoise |
+|-----|------------|--------|--------|---------|
+|![raw](figures/preproc/raw.png)|![raw](figures/preproc/down.png)|![raw](figures/preproc/pass_y.png)|![raw](figures/preproc/pass_z.png)|![raw](figures/preproc/denoise.png)|
+
+
+After these steps, the cloud has been cleaned up sufficiently for higher-level processing steps.
+
 ### RANSAC
+
+In [seg\_utils.py]():
+```python
+def ransac(cloud, dmax=0.01):
+    seg = cloud.make_segmenter()
+    seg.set_model_type(pcl.SACMODEL_PLANE)
+    seg.set_method_type(pcl.SAC_RANSAC)
+    seg.set_distance_threshold(dmax)
+    inliers, coefficients = seg.segment()
+
+    cloud_table = cloud.extract(inliers, negative=False)
+    cloud_objects = cloud.extract(inliers, negative=True)
+
+    return cloud_table, cloud_objects
+```
 
 ```python
 cloud_t, cloud_o = seg_utils.ransac(cloud, dmax=0.02)
