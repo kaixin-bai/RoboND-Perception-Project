@@ -59,7 +59,7 @@ Here's how a point cloud from scene 1 would get transformed as it goes across th
 
 | Raw | Downsample | Pass Y | Pass Z | Denoise |
 |-----|------------|--------|--------|---------|
-|![raw](figures/preproc/raw.png)|![raw](figures/preproc/down.png)|![raw](figures/preproc/pass_y.png)|![raw](figures/preproc/pass_z.png)|![raw](figures/preproc/denoise.png)|
+|![raw](figures/preproc/raw.png)|![down](figures/preproc/down.png)|![pass\_y](figures/preproc/pass_y.png)|![pass\_z](figures/preproc/pass_z.png)|![denoise](figures/preproc/denoise.png)|
 
 
 After these steps, the cloud has been cleaned up sufficiently for higher-level processing steps.
